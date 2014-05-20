@@ -1,0 +1,5 @@
+".\Output\STARTUP.obj",
+".\Output\main.obj",
+".\Output\Timer.obj" 
+TO ".\Output\LED_TASK" 
+PRINT(".\Output\LED_TASK.m51") RAMSIZE(256) 

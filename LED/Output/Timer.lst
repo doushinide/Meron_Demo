@@ -1,0 +1,127 @@
+C51 COMPILER V9.50a   TIMER                                                                07/24/2012 17:22:18 PAGE 1   
+
+
+C51 COMPILER V9.50a, COMPILATION OF MODULE TIMER
+OBJECT MODULE PLACED IN .\Output\Timer.obj
+COMPILER INVOKED BY: f:\Program Files\Keil_C51\C51\BIN\C51.EXE User\Timer.c LARGE BROWSE INCDIR(F:\Program Files\Keil_C5
+                    -1\C51\INC;.\User) DEBUG OBJECTEXTEND PRINT(.\Output\Timer.lst) OBJECT(.\Output\Timer.obj)
+
+line level    source
+
+   1          #include <reg52.h>
+   2          #include "Timer.h"
+   3          #include "port.h"
+   4          #include "main.h"
+   5          #include "Led7Seg.h"
+   6          
+   7          bit g_bSystemTime2Ms = 0;
+   8          bit g_bTime1S = 0; //时钟1S时标消息
+   9          
+  10          static uint16 s_u16ClockTickCount = 0; //对2ms时标进行计数
+  11          
+  12          //-----------------------------------------------------------------------
+  13          //          定时器0初始化函数
+  14          //-----------------------------------------------------------------------
+  15          void Timer0Init(void)
+  16          {
+  17   1          TMOD &= 0xf0;
+  18   1          TMOD |= 0x01;
+  19   1          TH0 = 0xf8;
+  20   1          TL0 = 0xcc;
+  21   1          TR0 = 1;
+  22   1          ET0 = 1;
+  23   1      }
+  24          
+  25          //-----------------------------------------------------------------------
+  26          //          定时器0中断函数
+  27          //-----------------------------------------------------------------------
+  28          void Time0Isr(void)interrupt 1
+  29          {
+  30   1          TH0 = 0xf8; //定时器重新赋初值
+  31   1          TL0 = 0xcc;
+  32   1          g_bSystemTime2Ms=1; //2MS时标标志位 置位
+  33   1          
+  34   1          if(++s_u16ClockTickCount == 500)
+  35   1          {
+  36   2              s_u16ClockTickCount = 0;
+  37   2              g_bTime1S = 1;
+  38   2          }
+  39   1      }
+  40          
+  41          //-----------------------------------------------------------------------
+  42          //          刷新数码管显示缓冲区函数
+  43          //-----------------------------------------------------------------------
+  44          void RunClock(void)
+  45          {
+  46   1          if(g_bTime1S )
+  47   1          {
+  48   2              g_bTime1S=0;
+  49   2              if(++g_u8LedDisplayBuffer[7] == 10)   //seconds
+  50   2              {
+  51   3                  g_u8LedDisplayBuffer[7]=0;
+  52   3                  if(++g_u8LedDisplayBuffer[6] == 6) 
+  53   3                  {
+  54   4                      g_u8LedDisplayBuffer[6]=0;
+C51 COMPILER V9.50a   TIMER                                                                07/24/2012 17:22:18 PAGE 2   
+
+  55   4                      if(++g_u8LedDisplayBuffer[4] == 10) //min
+  56   4                      {
+  57   5                          g_u8LedDisplayBuffer[4] =0;
+  58   5                          if(++g_u8LedDisplayBuffer[3] == 6)
+  59   5                          {
+  60   6                              g_u8LedDisplayBuffer[3]=0;
+  61   6                              if( g_u8LedDisplayBuffer[0]<2) //hour
+  62   6                              {
+  63   7                                  if(++g_u8LedDisplayBuffer[1]==10)
+  64   7                                  {
+  65   8                                      g_u8LedDisplayBuffer[1]=0;
+  66   8                                      g_u8LedDisplayBuffer[0]++;
+  67   8                                  }
+  68   7                              }
+  69   6                              else
+  70   6                              {
+  71   7                                  if(++g_u8LedDisplayBuffer[1] == 4) // 24清零
+  72   7                                  {
+  73   8                                      g_u8LedDisplayBuffer[1]=0;
+  74   8                                      g_u8LedDisplayBuffer[0]=0;
+  75   8                                  }
+  76   7                              }
+  77   6                          }
+  78   5                      }
+  79   4                  }
+  80   3              }
+  81   2          }
+  82   1      }
+  83          
+  84          //-----------------------------------------------------------------------
+  85          //          时钟初始值设置函数
+  86          //-----------------------------------------------------------------------
+  87          void SetClock(uint8 nHour, uint8 nMinute, uint8 nSecond)
+  88          {                       
+  89   1          g_u8LedDisplayBuffer[0] = nHour/10;
+  90   1          g_u8LedDisplayBuffer[1] = nHour%10;
+  91   1          g_u8LedDisplayBuffer[2] = '-' ;
+  92   1          g_u8LedDisplayBuffer[3] = nMinute/10;
+  93   1          g_u8LedDisplayBuffer[4] = nMinute%10;
+  94   1          g_u8LedDisplayBuffer[5] = '-' ;
+  95   1          g_u8LedDisplayBuffer[6] = nSecond/10;
+  96   1          g_u8LedDisplayBuffer[7] = nSecond%10;
+  97   1      }
+  98          
+  99          
+ 100          
+ 101          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    459    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      4       4
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      2    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
